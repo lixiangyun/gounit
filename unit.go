@@ -23,8 +23,9 @@ type Result struct {
 }
 
 type Test struct {
+	sync.Mutex
 	name    string
-	fun     func(*Suite)
+	fun     func(*Test)
 	success int
 	falied  int
 	ret     RETURN
@@ -34,26 +35,27 @@ type Test struct {
 type Suite struct {
 	sync.Mutex
 	name string
-	cur  *Test
 	test []*Test
 }
 
 func (s *Suite) addTest(name string, fun interface{}) {
-
-	test := &Test{name: name, ret: SUCCESS, err: make([]string, 0), fun: fun.(func(*Suite))}
+	test := &Test{
+		name: name,
+		ret:  SUCCESS,
+		err:  make([]string, 0),
+		fun:  fun.(func(*Test)),
+	}
 
 	s.test = append(s.test, test)
-
-	log.Println("Suite "+s.name+" add test ", name, fun)
+	log.Printf("Suite %s Add [%s]\r\n", s.name, name)
 }
 
 func (s *Suite) run() {
-
 	log.Println("Suite :", s.name)
 
 	for _, t := range s.test {
-		s.cur = t
-		t.fun(s)
+		t.fun(t)
+
 		if t.ret == FAILED {
 			log.Printf("Test : %s run failed!(%s)\r\n", t.name, t.err)
 		} else {
@@ -83,14 +85,6 @@ func (s *Suite) statCase() Stat {
 	return stat
 }
 
-func (r *Result) Printf() string {
-	s := fmt.Sprintf("Run Summary : Total   Passed    Failed\r\n")
-	s += fmt.Sprintf("      Suite   %5d   %5d   %5d\r\n", r.Suite.Total(), r.Suite.Paased, r.Suite.Failed)
-	s += fmt.Sprintf("      Tests   %5d   %5d   %5d\r\n", r.Tests.Total(), r.Tests.Paased, r.Tests.Failed)
-	s += fmt.Sprintf("      Cases   %5d   %5d   %5d\r\n", r.Cases.Total(), r.Cases.Paased, r.Cases.Failed)
-	return s
-}
-
 func newSuite(this interface{}) *Suite {
 
 	vfun := reflect.ValueOf(this)
@@ -107,7 +101,7 @@ func newSuite(this interface{}) *Suite {
 		if funtype.NumIn() != 1 || funtype.NumOut() != 0 {
 			continue
 		}
-		if funtype.In(0).String() != "*gounit.Suite" {
+		if funtype.In(0).String() != "*gounit.Test" {
 			continue
 		}
 
@@ -117,20 +111,29 @@ func newSuite(this interface{}) *Suite {
 	return s
 }
 
-func (s *Suite) ASSERT(b bool) {
+func (t *Test) ASSERT(b bool) {
 	if b == false {
-		s.cur.falied++
-		s.cur.ret = FAILED
-		s.cur.err = append(s.cur.err, string(debug.Stack()))
+		t.falied++
+		t.ret = FAILED
+		t.err = append(t.err, string(debug.Stack()))
 	} else {
-		s.cur.success++
+		t.success++
 	}
+}
+
+func (r *Result) Printf() string {
+	s := fmt.Sprintf("Run Summary : Total   Passed    Failed\r\n")
+	s += fmt.Sprintf("      Suite   %5d   %5d   %5d\r\n", r.Suite.Total(), r.Suite.Paased, r.Suite.Failed)
+	s += fmt.Sprintf("      Tests   %5d   %5d   %5d\r\n", r.Tests.Total(), r.Tests.Paased, r.Tests.Failed)
+	s += fmt.Sprintf("      Cases   %5d   %5d   %5d\r\n", r.Cases.Total(), r.Cases.Paased, r.Cases.Failed)
+	return s
 }
 
 var gSuite []*Suite
 
 func init() {
 	gSuite = make([]*Suite, 0)
+	log.SetFlags(log.Ldate | log.Lmicroseconds)
 }
 
 func AddSuite(this interface{}) {
@@ -163,6 +166,5 @@ func RunAllTests() Result {
 	}
 
 	fmt.Println(result.Printf())
-
 	return result
 }

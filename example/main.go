@@ -6,23 +6,24 @@ import (
 
 type hello int
 
-func (hello) Test01(s *gounit.Suite) {
+func (hello) Test01(s *gounit.Test) {
 	s.ASSERT(true)
 }
 
-func (hello) Test02(s *gounit.Suite) {
+func (hello) Test02(s *gounit.Test) {
 	s.ASSERT(true)
 }
 
 type world int
 
-func (world) Test01(s *gounit.Suite) {
+func (world) Test01(s *gounit.Test) {
 	for i := 0; i < 100; i++ {
 		s.ASSERT(true)
 	}
 }
 
-func (world) Test02(s *gounit.Suite) {
+func (world) Test02(s *gounit.Test) {
+	s.ASSERT(false)
 	s.ASSERT(false)
 }
 
