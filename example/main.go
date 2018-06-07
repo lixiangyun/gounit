@@ -1,55 +1,29 @@
 package main
 
 import (
-	"log"
-
 	"github.com/lixiangyun/gounit"
 )
 
 type hello int
 
 func (hello) Test01(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
 	s.ASSERT(true)
 }
 
 func (hello) Test02(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
-	s.ASSERT(true)
-}
-
-func (hello) Test03(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
 	s.ASSERT(true)
 }
 
 type world int
 
 func (world) Test01(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
-	s.ASSERT(true)
+	for i := 0; i < 100; i++ {
+		s.ASSERT(true)
+	}
 }
 
 func (world) Test02(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
-	s.ASSERT(true)
-}
-
-func (world) Test03(s *gounit.Suite) {
-
-	log.Println("test run ....")
-
-	s.ASSERT(true)
+	s.ASSERT(false)
 }
 
 func main() {
