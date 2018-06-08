@@ -1,8 +1,8 @@
 package gounit
 
 type Stat struct {
-	Paased int
-	Failed int
+	Paased int `json:"Paased"`
+	Failed int `json:"Failed"`
 }
 
 func (s1 *Stat) Add(s2 Stat) {

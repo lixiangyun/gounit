@@ -11,7 +11,7 @@ func (hello) Test01(s *gounit.Test) {
 }
 
 func (hello) Test02(s *gounit.Test) {
-	s.ASSERT(true)
+	s.ASSERT(false)
 }
 
 type world int
@@ -23,8 +23,7 @@ func (world) Test01(s *gounit.Test) {
 }
 
 func (world) Test02(s *gounit.Test) {
-	s.ASSERT(false)
-	s.ASSERT(false)
+	s.ASSERT(true)
 }
 
 func main() {
