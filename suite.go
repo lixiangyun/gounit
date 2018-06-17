@@ -1,6 +1,7 @@
 package gounit
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"runtime/debug"
@@ -22,7 +23,8 @@ type Test struct {
 	success int
 	falied  int
 	ret     RETURN
-	err     []string
+	err     string
+	log     []string
 }
 
 type Suite struct {
@@ -35,7 +37,6 @@ func (s *Suite) addTest(name string, fun interface{}) {
 	test := &Test{
 		name: name,
 		ret:  SUCCESS,
-		err:  make([]string, 0),
 		fun:  fun.(func(*Test)),
 	}
 
@@ -51,7 +52,21 @@ func (s *Suite) runTest() {
 		t.fun(t)
 
 		if t.ret == FAILED {
-			log.Printf("Test : %s run failed!(%s)\r\n", t.name, t.err)
+
+			var loginfo string
+
+			for _, v := range t.log {
+				loginfo += v
+			}
+
+			loginfo += t.err
+
+			if loginfo != "" {
+				log.Printf("Test : %s run failed!\r\n(log: %s)\r\n", t.name, loginfo)
+			} else {
+				log.Printf("Test : %s run failed!\r\n", t.name)
+			}
+
 		} else {
 			log.Printf("Test : %s run paas!\r\n", t.name)
 		}
@@ -113,7 +128,7 @@ func newSuite(this interface{}) *Suite {
 	return s
 }
 
-func (t *Test) ASSERT(b bool) {
+func (t *Test) ASSERT_LOG(b bool, log ...string) {
 
 	t.Lock()
 	defer t.Unlock()
@@ -121,8 +136,28 @@ func (t *Test) ASSERT(b bool) {
 	if b == false {
 		t.falied++
 		t.ret = FAILED
-		t.err = append(t.err, string(debug.Stack()))
+
+		if len(log) != 0 {
+			t.log = log
+		}
+
+		if bReocrdCallStack {
+			t.err = string(debug.Stack())
+		}
+
 	} else {
 		t.success++
+	}
+}
+
+func (t *Test) ASSERT(b bool) {
+	t.ASSERT_LOG(b)
+}
+
+func (t *Test) ASSERT_STRING(str1, str2 string) {
+	if str1 != str2 {
+		t.ASSERT_LOG(false, fmt.Sprintf("EQUAL_FAIL!(%s,%s)\r\n", str1, str2))
+	} else {
+		t.ASSERT_LOG(true)
 	}
 }

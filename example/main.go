@@ -26,10 +26,20 @@ func (world) Test02(s *gounit.Test) {
 	s.ASSERT(true)
 }
 
+func (world) Test03(s *gounit.Test) {
+	s.ASSERT_LOG(false, "Test03 run failed!")
+}
+
+func (world) Test04(s *gounit.Test) {
+	s.ASSERT_STRING("abc", "123")
+}
+
 func main() {
 
 	var a hello
 	var b world
+
+	gounit.RecordCallStack(true)
 
 	gounit.AddSuite(&a)
 	gounit.AddSuite(&b)

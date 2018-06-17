@@ -19,11 +19,17 @@ func (r *Result) Printf() string {
 	return s
 }
 
+var bReocrdCallStack = false
+
 var gSuite []*Suite
 
 func init() {
 	gSuite = make([]*Suite, 0)
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
+}
+
+func RecordCallStack(enable bool) {
+	bReocrdCallStack = enable
 }
 
 func AddSuite(this interface{}) {
